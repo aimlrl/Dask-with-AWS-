@@ -1,0 +1,30 @@
+Content-Type: multipart/mixed; boundary="==BOUNDARY=="
+MIME-Version: 1.0
+--==BOUNDARY==
+Content-Type: text/cloud-boothook; charset="us-ascii"
+# Install nfs-utils
+cloud-init-per once yum_update yum update -y
+cloud-init-per once install_nfs_utils yum install -y nfs-utils
+# Create /efs folder
+cloud-init-per once mkdir_efs mkdir /efs
+# Mount /efs
+cloud-init-per once mount_efs echo -e '<your filesystem DNS name>:/ /efs nfs4
+nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0' >>
+/etc/fstab
+mount -a
+--==BOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+#!/bin/bash
+echo ECS_CLUSTER=<your ecs cluster name> >> /etc/ecs/ecs.config
+echo ECS_BACKEND_HOST= >> /etc/ecs/ecs.config
+--==BOUNDARY==--
+
+
+Fill in the filesystem DNS name you copied from the EFS confirmation screen where
+<your filesystem DNS name> appears, and fill in your ECS cluster name where <your
+ecs cluster name> appears (it should be dask-cluster unless you selected a different
+name). This data essentially tells the EC2 instances to configure themselves to mount
+the EFS filesystem you created earlier in the section at boot time. Once you’ve finished
+adding the User Data to the configuration, click Skip to Review, and then click Create
+Launch Configuration. When prompted to select a key pair, select the dask-cluster-key
+you previously generated. Check the check box and click Create Launch Configuration.
